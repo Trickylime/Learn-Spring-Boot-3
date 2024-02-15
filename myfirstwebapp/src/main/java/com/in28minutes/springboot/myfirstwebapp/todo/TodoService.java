@@ -10,6 +10,7 @@ import java.util.List;
 public class TodoService {
 
     private static List<Todo> todos = new ArrayList<>();
+    private static int todosCount = 0;
     static {
         todos.add(new Todo("Jack", "Learn AWS",
                 LocalDate.now().plusYears(1), false));
@@ -21,5 +22,12 @@ public class TodoService {
 
     public List<Todo> findByUsername(String username) {
         return todos;
+    }
+
+    public void addTodo(String username, String description,
+                        LocalDate targetDate, boolean isDone) {
+
+        Todo todo = new Todo(username, description, targetDate, isDone);
+        todos.add(todo);
     }
 }
