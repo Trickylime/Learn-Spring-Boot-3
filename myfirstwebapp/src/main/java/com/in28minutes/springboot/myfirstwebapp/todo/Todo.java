@@ -1,5 +1,7 @@
 package com.in28minutes.springboot.myfirstwebapp.todo;
 
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
 
 public class Todo {
@@ -7,6 +9,8 @@ public class Todo {
     private static int idCounter = 1;
     private int id = idCounter++;
     private String userName;
+
+    @Size(min=3, message = "Description too short, enter at least 3 characters")
     private String description;
     private LocalDate targetDate;
     private boolean done;
