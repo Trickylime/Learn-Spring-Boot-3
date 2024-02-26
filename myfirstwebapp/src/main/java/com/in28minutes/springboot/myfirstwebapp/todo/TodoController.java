@@ -1,8 +1,8 @@
 package com.in28minutes.springboot.myfirstwebapp.todo;
 
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
@@ -27,7 +27,8 @@ public class TodoController {
     @RequestMapping("list-todos")
     public String listAllTodos(ModelMap model) {
 
-        List<Todo> todos = todoService.findByUsername("Jack");
+        String username = getLoggedInUsername(model);
+        List<Todo> todos = todoService.findByUsername(username);
         model.put("todos", todos);
 
         return "listTodos";
@@ -36,7 +37,7 @@ public class TodoController {
     @RequestMapping(value = "add-todo", method = RequestMethod.GET)
     public String showNewTodoPage(ModelMap model) {
 
-        String username = (String) model.get("name");
+        String username = getLoggedInUsername(model);
         Todo todo = new Todo(username, "",
                 LocalDate.now().plusYears(1), false);
         model.put("todo", todo);
@@ -51,7 +52,7 @@ public class TodoController {
             return "todo";
         }
 
-        String username = (String) model.get("name");
+        String username = getLoggedInUsername(model);
         todoService.addTodo(username, todo.getDescription(),
                 todo.getTargetDate(), false);
 
@@ -79,13 +80,16 @@ public class TodoController {
             return "todo";
         }
 
-        Logger logger = LoggerFactory.getLogger(this.getClass());
-        logger.info(todo.toString());
-        logger.info(model.toString());
-
-        String username = (String) model.get("name");
+        String username = getLoggedInUsername(model);
+        todo.setUserName(username);
         todoService.updateToDo(todo);
 
         return "redirect:list-todos";
+    }
+
+    private String getLoggedInUsername(ModelMap model) {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
     }
 }
