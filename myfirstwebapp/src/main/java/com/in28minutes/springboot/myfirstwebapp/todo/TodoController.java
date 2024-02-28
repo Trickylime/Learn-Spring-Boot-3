@@ -1,6 +1,7 @@
 package com.in28minutes.springboot.myfirstwebapp.todo;
 
 import jakarta.validation.Valid;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.ModelMap;
@@ -52,8 +53,11 @@ public class TodoController {
         }
 
         String username = getLoggedInUsername(model);
-        todoService.addTodo(username, todo.getDescription(),
+        Todo addedTodo = todoService.addTodo(username, todo.getDescription(),
                 todo.getTargetDate(), false);
+
+        LoggerFactory.getLogger(this.getClass()).info("Generated: {}", addedTodo);
+
 
         return "redirect:list-todos";
     }

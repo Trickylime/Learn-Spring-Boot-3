@@ -1,6 +1,7 @@
 package com.in28minutes.springboot.myfirstwebapp.todo;
 
 import jakarta.validation.Valid;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -58,6 +59,8 @@ public class TodoControllerJpa {
         todo.setUserName(username);
         todoRepository.save(todo);
 
+        LoggerFactory.getLogger(this.getClass()).info("Generated new todo: {}", todo);
+
 //        todoService.addTodo(todo.getUserName(), todo.getDescription(),
 //                todo.getTargetDate(), todo.isDone());
 
@@ -79,15 +82,17 @@ public class TodoControllerJpa {
     }
 
     @RequestMapping(value = "update-todo", method = RequestMethod.POST)
-    public String updateTodoPage(ModelMap model, @Valid Todo todo, BindingResult result) {
+    public String updateTodoPage(@RequestParam int id, ModelMap model, @Valid Todo todo, BindingResult result) {
 
         if(result.hasErrors()) {
             return "todo";
         }
 
         String username = getLoggedInUsername(model);
+        todo.setId(id);
         todo.setUserName(username);
         todoRepository.save(todo);
+
 
         return "redirect:list-todos";
     }
