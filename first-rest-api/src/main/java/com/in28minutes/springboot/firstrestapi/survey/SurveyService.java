@@ -72,7 +72,6 @@ public class SurveyService {
                         .findFirst();
 
         return optionalQuestion.orElse(null);
-
     }
 
     public String addNewSurveyQuestion(String surveyId, Question question) {
@@ -88,5 +87,25 @@ public class SurveyService {
     private static String generateRandomId() {
         SecureRandom secureRandom = new SecureRandom();
         return new BigInteger(32, secureRandom).toString();
+    }
+
+    public String deleteQuestionById(String surveyId, String questionId) {
+
+        List<Question> surveyQuestions = retrieveAllSurveyQuestions(surveyId);
+        if (surveyQuestions==null) return null;
+
+        Predicate<? super Question> predicate = q -> q.getId().equalsIgnoreCase(questionId);
+        boolean removed = surveyQuestions.removeIf(predicate);
+
+        if (!removed) return null;
+
+        return questionId;
+    }
+
+    public void updateSurveyQuestion(String surveyId, String questionId, Question question) {
+
+        List<Question> surveyQuestions = retrieveAllSurveyQuestions(surveyId);
+        surveyQuestions.removeIf(q -> q.getId().equalsIgnoreCase(questionId));
+        surveyQuestions.add(question);
     }
 }

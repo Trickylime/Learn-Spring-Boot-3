@@ -68,4 +68,25 @@ public class SurveyResource {
 
         return ResponseEntity.created(location).build();
     }
+
+    @RequestMapping(value="/surveys/{surveyId}/questions/{questionId}", method = RequestMethod.DELETE)
+    public ResponseEntity<Object> deleteQuestionById(@PathVariable String surveyId,
+                                                     @PathVariable String questionId) {
+
+        String question = surveyService.deleteQuestionById(surveyId, questionId);
+
+        if (question == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @RequestMapping(value="/surveys/{surveyId}/questions/{questionId}", method = RequestMethod.PUT)
+    public ResponseEntity<Object> updateQuestionById(@PathVariable String surveyId, @PathVariable String questionId,
+                                                     @RequestBody Question question) {
+
+        surveyService.updateSurveyQuestion(surveyId, questionId, question);
+
+        return ResponseEntity.noContent().build();
+    }
 }
