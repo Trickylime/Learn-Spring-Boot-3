@@ -11,6 +11,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Base64;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,9 +24,19 @@ public class SurveyResourceIT {
     private static String SPECIFIC_QUESTION_URL = "/surveys/Survey1/questions/question1";
     private static String SPECIFIC_SURVEY_URL = "/surveys/Survey1";
     private static String GENERIC_QUESTIONS_URL = "/surveys/Survey1/questions";
+
+    //Basic SmFjazpQYXNzdzByZA==
     @Test
     void retrieveQuestionById_basicScenario() throws JSONException {
-        ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_QUESTION_URL, String.class);
+
+        HttpHeaders headers = createHttpContentTypeAndAuthorizationHeaders();
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
+
+        ResponseEntity<String> responseEntity
+                = template.exchange(SPECIFIC_QUESTION_URL, HttpMethod.GET, httpEntity, String.class);
+
+//        ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_QUESTION_URL, String.class);
 
         String expectedResponse =
                 """
@@ -43,7 +55,14 @@ public class SurveyResourceIT {
 
     @Test
     void retrieveSurveyById_basicScenario() throws JSONException {
-        ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_SURVEY_URL, String.class);
+
+        HttpHeaders headers = createHttpContentTypeAndAuthorizationHeaders();
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
+
+        ResponseEntity<String> responseEntity
+                = template.exchange(SPECIFIC_SURVEY_URL, HttpMethod.GET, httpEntity, String.class);
+        //ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_SURVEY_URL, String.class);
 
         String expectedResponse =
                 """
@@ -91,8 +110,7 @@ public class SurveyResourceIT {
                 }
             """;
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/json");
+        HttpHeaders headers = createHttpContentTypeAndAuthorizationHeaders();
 
         HttpEntity<String> httpEntity = new HttpEntity<>(requestBody, headers);
 
@@ -100,6 +118,27 @@ public class SurveyResourceIT {
                 = template.exchange(GENERIC_QUESTIONS_URL, HttpMethod.POST, httpEntity, String.class);
 
         assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
-        assertTrue(responseEntity.getHeaders().get("Location").get(0).contains("/surveys/Survey1/questions/"));
+        String locationHeader = responseEntity.getHeaders().get("Location").get(0);
+        assertTrue(locationHeader.contains("/surveys/Survey1/questions/"));
+
+
+        ResponseEntity<String> responseEntityDelete
+                = template.exchange(locationHeader, HttpMethod.DELETE, httpEntity, String.class);
+        assertTrue(responseEntityDelete.getStatusCode().is2xxSuccessful());
+        //        template.delete(locationHeader); //delete the new created survey question
+    }
+
+    private HttpHeaders createHttpContentTypeAndAuthorizationHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-type", "application/json");
+        headers.add("Authorization", "Basic " + performBasicAuthEncoding("jack", "Passw0rd"));
+        return headers;
+    }
+
+    String performBasicAuthEncoding(String user, String password) {
+
+        String combined = user + ":" + password;
+        byte[] encodedBytes = Base64.getEncoder().encode(combined.getBytes());
+        return new String(encodedBytes);
     }
 }
